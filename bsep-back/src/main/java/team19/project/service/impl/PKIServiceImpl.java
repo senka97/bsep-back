@@ -9,9 +9,11 @@ import team19.project.model.IssuerData;
 import team19.project.model.SubjectData;
 import team19.project.repository.StoreCertificates;
 import team19.project.service.PKIService;
+import team19.project.utils.BigIntGenerator;
 import team19.project.utils.CertificateGenerator;
 import team19.project.utils.CertificateType;
 
+import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -19,6 +21,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.UUID;
 
 @Service
@@ -28,6 +31,8 @@ public class PKIServiceImpl implements PKIService {
     private CertificateGenerator certificateGenerator;
     @Autowired
     private StoreCertificates store;
+    @Autowired
+    BigIntGenerator bigIntGenerator;
 
     private KeyPair keyPairSubject = generateKeyPair();
     private X509Certificate cert;
@@ -46,12 +51,13 @@ public class PKIServiceImpl implements PKIService {
 
         if(certificateDTO.getCertificateType().equals(CertificateType.SELF_SIGNED)) {
             IssuerData issuerData = generateIssuerData(certificateDTO);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true);
         } else if(certificateDTO.getCertificateType().equals(CertificateType.INTERMEDIATE)) {
-            IssuerData issuerData = store.findIssuerBySerialNumber(certificateDTO.getIssuerSerialNumber(), fileLocation);
-            subjectData.setSerialNumber("654321");
-            issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(certificateDTO.getIssuerSerialNumber(), fileLocation);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData);
+            Enumeration<String> aliases = store.getAllAliases(fileLocation);
+            String serialNumber = aliases.nextElement();
+            IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
+            issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true);
         } else if(certificateDTO.getCertificateType().equals(CertificateType.END_ENTITY)) {
             return false;
         }
@@ -110,7 +116,7 @@ public class PKIServiceImpl implements PKIService {
             Date startDate = iso8601Formater.parse(certificateDTO.getStartDate());
             Date endDate = iso8601Formater.parse(certificateDTO.getEndDate());
 
-            String serialNumber = "123456";
+            String serialNumber = bigIntGenerator.generateRandom().toString();
 
             X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
             builder.addRDN(BCStyle.CN, certificateDTO.getSubjectCommonName());
