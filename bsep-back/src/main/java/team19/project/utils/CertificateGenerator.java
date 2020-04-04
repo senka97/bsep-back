@@ -1,9 +1,14 @@
 package team19.project.utils;
 
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.CertIOException;
+import org.springframework.stereotype.Component;
 import team19.project.model.IssuerData;
 import team19.project.model.SubjectData;
 
 import java.math.BigInteger;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -16,11 +21,13 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+@Component
 public class CertificateGenerator {
 
     public CertificateGenerator() {}
 
-    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData) {
+    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, boolean isCa) {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         try {
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
             builder = builder.setProvider("BC");
@@ -33,6 +40,8 @@ public class CertificateGenerator {
                     subjectData.getEndDate(),
                     subjectData.getX500name(),
                     subjectData.getPublicKey());
+
+            certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(isCa));
 
             X509CertificateHolder certHolder = certGen.build(contentSigner);
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
@@ -48,6 +57,8 @@ public class CertificateGenerator {
         } catch (OperatorCreationException e) {
             e.printStackTrace();
         } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (CertIOException e) {
             e.printStackTrace();
         }
         return null;

@@ -9,8 +9,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class KeyStoreWriter {
 
@@ -60,9 +60,9 @@ public class KeyStoreWriter {
         }
     }
 
-    public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
+    public void write(String alias, PrivateKey privateKey, char[] password, X509Certificate[] chain) {
         try {
-            keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
+            keyStore.setKeyEntry(alias, privateKey, password, chain);
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
