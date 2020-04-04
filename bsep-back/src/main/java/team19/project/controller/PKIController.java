@@ -8,8 +8,8 @@ import team19.project.dto.CertificateDTO;
 import team19.project.service.impl.PKIServiceImpl;
 
 @RestController
-@RequestMapping(value = "api/pki")
-@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:8081"})
+@RequestMapping(value = "/api/pki")
+@CrossOrigin
 public class PKIController {
 
     @Autowired
@@ -23,8 +23,11 @@ public class PKIController {
 
     @PostMapping(value="/addNewCertificate", consumes="application/json")
     public ResponseEntity<?> addNewCertificate(@RequestBody CertificateDTO certificateDTO){
-
-        return ResponseEntity.status(HttpStatus.OK).build();
+        boolean certCreated = pkiService.addNewCertificate(certificateDTO);
+        if(certCreated) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     @GetMapping(value="/checkRevocationStatusOCSP/{serialNumber}")

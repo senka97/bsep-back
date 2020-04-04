@@ -1,9 +1,11 @@
 package team19.project.utils;
 
+import org.springframework.stereotype.Component;
 import team19.project.model.IssuerData;
 import team19.project.model.SubjectData;
 
 import java.math.BigInteger;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -16,11 +18,13 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+@Component
 public class CertificateGenerator {
 
     public CertificateGenerator() {}
 
     public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData) {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         try {
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
             builder = builder.setProvider("BC");
