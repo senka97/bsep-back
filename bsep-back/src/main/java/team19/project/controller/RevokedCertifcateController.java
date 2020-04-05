@@ -17,7 +17,7 @@ public class RevokedCertifcateController {
     private RevokedCertificateServiceImpl revokedCertificateService;
 
 
-    @PutMapping(value="/revokeCertificate")
+    @PutMapping(value="/revokeCertificate", consumes="application/json")
     public ResponseEntity<?> revokeCertificate(@RequestBody RevokedCertificateDTO revokeCertificateDTO){
 
         boolean alreadyRevoked = this.revokedCertificateService.revokeCertificate(revokeCertificateDTO);
@@ -32,6 +32,11 @@ public class RevokedCertifcateController {
     @GetMapping(value="/checkRevocationStatusOCSP/{serialNumber}")
     public ResponseEntity<Boolean> checkRevocationStatusOCSP(@PathVariable("serialNumber") String serialNumber){
 
-        return new ResponseEntity<>(true, HttpStatus.OK);
+        boolean revoked = this.revokedCertificateService.checkRevocationStatusOCSP(serialNumber);
+        if(revoked) {
+            return new ResponseEntity<>(true, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(false, HttpStatus.OK);
+        }
     }
 }
