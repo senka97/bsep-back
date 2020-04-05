@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +30,7 @@ public class KeyStoreWriter {
 
     public void loadKeyStore(String fileName, char[] password) {
         try {
-            if(fileName != null) {
+            if(fileName != null && Files.exists(Paths.get(fileName))) {
                 keyStore.load(new FileInputStream(fileName), password);
             } else {
                 keyStore.load(null, password);
