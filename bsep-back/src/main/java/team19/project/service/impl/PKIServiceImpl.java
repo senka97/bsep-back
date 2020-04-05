@@ -37,6 +37,8 @@ public class PKIServiceImpl implements PKIService {
     private StoreCertificates store;
     @Autowired
     BigIntGenerator bigIntGenerator;
+    @Autowired
+    private RevokedCertificateServiceImpl revokedCertificateService;
 
     private KeyPair keyPairSubject = generateKeyPair();
     private X509Certificate cert;
@@ -118,25 +120,13 @@ public class PKIServiceImpl implements PKIService {
             Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocation);
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
             if (((X509Certificate) c).getBasicConstraints() > -1) {
-                issuerDTOS.add(new IssuerDTO(certHolder));
+                //ovde jos provera pored toga sto je ca, da li je povucen, ili bi mozda bolje moglo da li je validan
+                if(!this.revokedCertificateService.checkRevocationStatusOCSP(((X509Certificate) c).getSerialNumber().toString())){
+                    issuerDTOS.add(new IssuerDTO(certHolder));
+                }
             }
         }
         return issuerDTOS;
-    }
-
-
-
-
-
-    @Override
-    public boolean checkRevocationStatusOCSP(String serialNumber)
-    {
-        return false;
-    }
-
-    @Override
-    public void revokeCertificate(String serialNumber) {
-
     }
 
     @Override

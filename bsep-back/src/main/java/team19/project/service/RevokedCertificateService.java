@@ -7,4 +7,5 @@ public interface RevokedCertificateService {
 
     RevokedCertificate findOne(Long id);
     boolean revokeCertificate(RevokedCertificateDTO revokedCertificateDTO);
+    boolean checkRevocationStatusOCSP(String serialNumber);
 }

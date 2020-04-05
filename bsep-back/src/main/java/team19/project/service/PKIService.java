@@ -14,8 +14,6 @@ public interface PKIService {
     ArrayList<CertificateBasicDTO> getAllCertificates();
     CertificateDetailsDTO getCertificateDetails(String serialNumber);
     boolean addNewCertificate(CertificateDTO certificateDTO) throws CertificateEncodingException; //mozda druga povratna vrednost
-    boolean checkRevocationStatusOCSP(String serialNumber);
-    void revokeCertificate(String serialNumber); //mozda druga povratna vrednost
     boolean checkValidityStatus(String serialNumber);
     List<IssuerDTO> getAllCA() throws CertificateEncodingException;
 
