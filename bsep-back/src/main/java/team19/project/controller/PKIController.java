@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import team19.project.dto.CertificateBasicDTO;
 import team19.project.dto.CertificateDTO;
 import team19.project.dto.CertificateDetailsDTO;
+import team19.project.dto.IssuerDTO;
 import team19.project.service.impl.PKIServiceImpl;
 
+import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
 
@@ -23,17 +25,23 @@ public class PKIController {
     @GetMapping(value="/getCertificateDetails/{serialNumber}", produces = "application/json")
     public CertificateDetailsDTO getCertificateDetails(@PathVariable("serialNumber") String serialNumber){
 
-        return null;
+        return pkiService.getCertificateDetails(serialNumber);
     }
 
     @GetMapping(value="/getAllCertificates", produces="application/json")
     public List<CertificateBasicDTO> getAllCertificate(){
 
-        return null;
+        return pkiService.getAllCertificates();
+    }
+
+    @GetMapping(value="/getAllCA", produces="application/json")
+    public List<IssuerDTO> getAllCA() throws CertificateEncodingException {
+
+        return pkiService.getAllCA();
     }
 
     @PostMapping(value="/addNewCertificate", consumes="application/json")
-    public ResponseEntity<?> addNewCertificate(@RequestBody CertificateDTO certificateDTO){
+    public ResponseEntity<?> addNewCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateEncodingException {
 
         boolean certCreated = pkiService.addNewCertificate(certificateDTO);
         if(certCreated) {
