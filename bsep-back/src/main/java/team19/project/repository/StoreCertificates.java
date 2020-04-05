@@ -1,13 +1,11 @@
 package team19.project.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import team19.project.model.IssuerData;
+import team19.project.utils.IssuerData;
 import team19.project.utils.KeyStoreReader;
 import team19.project.utils.KeyStoreWriter;
 
-import java.security.Key;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;

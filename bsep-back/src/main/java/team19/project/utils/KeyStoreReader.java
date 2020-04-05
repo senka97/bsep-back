@@ -17,7 +17,6 @@ import java.util.Enumeration;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import team19.project.model.IssuerData;
 
 public class KeyStoreReader {
 
