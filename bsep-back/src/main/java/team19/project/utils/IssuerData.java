@@ -1,4 +1,4 @@
-package team19.project.model;
+package team19.project.utils;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import java.security.PrivateKey;

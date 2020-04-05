@@ -5,24 +5,21 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team19.project.dto.CertificateDTO;
-import team19.project.model.IssuerData;
-import team19.project.model.SubjectData;
+import team19.project.utils.IssuerData;
+import team19.project.utils.SubjectData;
 import team19.project.repository.StoreCertificates;
 import team19.project.service.PKIService;
 import team19.project.utils.BigIntGenerator;
 import team19.project.utils.CertificateGenerator;
 import team19.project.utils.CertificateType;
 
-import java.math.BigInteger;
 import java.security.*;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.UUID;
 
 @Service
 public class PKIServiceImpl implements PKIService {

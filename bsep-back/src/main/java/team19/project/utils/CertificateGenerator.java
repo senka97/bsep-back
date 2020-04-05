@@ -4,8 +4,6 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.CertIOException;
 import org.springframework.stereotype.Component;
-import team19.project.model.IssuerData;
-import team19.project.model.SubjectData;
 
 import java.math.BigInteger;
 import java.security.Security;
