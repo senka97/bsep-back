@@ -6,6 +6,9 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 public class CertificateBasicDTO {
 
     //ove ce ici neke osnovne informacije o sertifikatima kada se oni prikazuju u listi
@@ -26,8 +29,11 @@ public class CertificateBasicDTO {
         this.subjectLastName = IETFUtils.valueToString(cn.getFirst().getValue());
         cn = subject.getRDNs(BCStyle.GIVENNAME)[0];
         this.subjectFirstName = IETFUtils.valueToString(cn.getFirst().getValue());
-        this.startDate = certificateHolder.getNotBefore().toString();
-        this.endDate = certificateHolder.getNotAfter().toString();
+        String pattern = "dd/MMM/yyyy";
+        DateFormat df = new SimpleDateFormat(pattern);
+        this.startDate = df.format(certificateHolder.getNotBefore());
+        this.endDate = df.format(certificateHolder.getNotAfter());
+
     }
 
     public CertificateBasicDTO(String subjectFirstName, String subjectLastName, String startDate, String endDate) {
