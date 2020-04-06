@@ -63,9 +63,11 @@ public class PKIServiceImpl implements PKIService {
         SubjectData subjectData = generateSubjectData(certificateDTO);
 
         if (certificateDTO.getCertificateType().equals(CertificateType.SELF_SIGNED)) {
-
+            // Resetovanje issuerCertificate jer ako je pre root-a kreiran bilo koji drugi sertifikat
+            // ovo polje ce imati vrednost i samim tim nece se izvrsiti linija 93 nego linija 102 i program ce puci
+            issuerCertificate = null;
             IssuerData issuerData = generateIssuerData(certificateDTO);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsage());
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.INTERMEDIATE)) {
 
@@ -73,7 +75,7 @@ public class PKIServiceImpl implements PKIService {
             String serialNumber = certificateDTO.getIssuerSerialNumber();
             IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
             issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsage());
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.END_ENTITY)) {
 
@@ -81,7 +83,8 @@ public class PKIServiceImpl implements PKIService {
             String serialNumber = certificateDTO.getIssuerSerialNumber();
             IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
             issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, false);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData,
+                    false, certificateDTO.getKeyUsage());
         }
 
         if (cert == null) {
