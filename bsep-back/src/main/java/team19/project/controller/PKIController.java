@@ -29,7 +29,7 @@ public class PKIController {
     }
 
     @GetMapping(value="/getAllCertificates", produces="application/json")
-    public List<CertificateBasicDTO> getAllCertificate(){
+    public List<CertificateBasicDTO> getAllCertificates() throws CertificateEncodingException {
 
         return pkiService.getAllCertificates();
     }
