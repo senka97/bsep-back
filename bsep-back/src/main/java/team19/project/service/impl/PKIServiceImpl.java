@@ -45,9 +45,25 @@ public class PKIServiceImpl implements PKIService {
     private String fileLocation = "keystore/keystore.jks";
 
     @Override
-    public ArrayList<CertificateBasicDTO> getAllCertificates() {
+    public ArrayList<CertificateBasicDTO> getAllCertificates() throws CertificateEncodingException {
 
-        return null;
+        Enumeration<String> alisases = store.getAllAliases(fileLocation);
+        ArrayList<CertificateBasicDTO> certificateBasicDTOS = new ArrayList<>();
+
+        while (alisases.hasMoreElements()) {
+            Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocation);
+
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
+
+            //ovde jos provera pored toga sto je ca, da li je povucen, ili bi mozda bolje moglo da li je validan
+            if(!this.revokedCertificateService.checkRevocationStatusOCSP(((X509Certificate) c).getSerialNumber().toString())){
+                certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
+            }
+
+        }
+        System.out.println("Duzina liste svih sertifikata:");
+        System.out.println(certificateBasicDTOS.size());
+        return certificateBasicDTOS;
     }
 
     @Override
