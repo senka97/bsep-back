@@ -54,7 +54,7 @@ public class PKIController {
     @GetMapping(value="/checkValidityStatus/{serialNumber}")
     public ResponseEntity<Boolean> checkValidityStatus(@PathVariable("serialNumber") String serialNumber){
 
-        return new ResponseEntity<>(true, HttpStatus.OK);
+        return new ResponseEntity<>(pkiService.checkValidityStatus(serialNumber), HttpStatus.OK);
     }
 
 
