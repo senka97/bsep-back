@@ -1,7 +1,7 @@
 package team19.project.utils;
 
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.CertIOException;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +24,7 @@ public class CertificateGenerator {
 
     public CertificateGenerator() {}
 
-    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, boolean isCa) {
+    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, boolean isCa, int keyUsage) {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         try {
             JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256WithRSAEncryption");
@@ -40,6 +40,7 @@ public class CertificateGenerator {
                     subjectData.getPublicKey());
 
             certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(isCa));
+            certGen.addExtension(Extension.keyUsage, true, new KeyUsage(keyUsage));
 
             X509CertificateHolder certHolder = certGen.build(contentSigner);
             JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
