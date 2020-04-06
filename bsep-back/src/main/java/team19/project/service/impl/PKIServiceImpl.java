@@ -18,9 +18,8 @@ import team19.project.utils.CertificateGenerator;
 import team19.project.utils.CertificateType;
 
 import java.security.*;
+import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -135,7 +134,63 @@ public class PKIServiceImpl implements PKIService {
     @Override
     public boolean checkValidityStatus(String serialNumber) {
 
-        return false;
+        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+        Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocation);
+
+        for(int i =0 ; i < chain.length; i++) {
+
+            X509Certificate x509Cert = (X509Certificate)chain[i];
+            X509Certificate x509CACert =null;
+
+
+            if(i != chain.length-1) {
+                x509CACert = (X509Certificate)chain[i+1];
+            }else {
+                x509CACert = (X509Certificate)chain[i]; //kada dodje do kraja proveri samopotpisni
+            }
+
+
+            //za svaki sertifikat u lancu proveri da li je istekao
+            try {
+                x509Cert.checkValidity();
+            } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+                // TODO Auto-generated catch block
+                System.out.println("SERTIFIKAT: "+x509Cert.getSerialNumber()+" ISTEKAO.");
+                e.printStackTrace();
+                return false;
+            }
+
+
+            //provera potpisa
+            try {
+                cert.verify(x509CACert.getPublicKey());
+            } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException
+                    | SignatureException e) {
+                System.out.println("SERTIFIKAT: "+x509Cert.getSerialNumber()+" NEMA VALIDAN POTPIS.");
+
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return false;
+
+            }
+
+            //provera da li se nalazi u listi povucenih
+            if(revokedCertificateService.checkRevocationStatusOCSP(x509Cert.getSerialNumber().toString())) {
+                System.out.println("SERTIFIKAT: "+x509Cert.getSerialNumber()+" JE POVUCEN.");
+                return false;
+            }
+
+            //proveri da li je issuer CA
+            if(x509CACert.getBasicConstraints() == -1) {
+                System.out.println("SERTIFIKAT: "+x509CACert.getSerialNumber()+" NIJE CA.");
+                return false;
+            }
+
+        }
+
+
+        System.out.println("SERTIFIKAT I LANAC SU VALIDNI.");
+        return true;
     }
 
 
