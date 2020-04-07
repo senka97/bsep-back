@@ -12,7 +12,7 @@ import java.util.List;
 public interface PKIService {
 
     ArrayList<CertificateBasicDTO> getAllCertificates() throws CertificateEncodingException;
-    CertificateDetailsDTO getCertificateDetails(String serialNumber);
+    CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException;
     boolean addNewCertificate(CertificateDTO certificateDTO) throws CertificateEncodingException; //mozda druga povratna vrednost
     boolean checkValidityStatus(String serialNumber);
     List<IssuerDTO> getAllCA() throws CertificateEncodingException;

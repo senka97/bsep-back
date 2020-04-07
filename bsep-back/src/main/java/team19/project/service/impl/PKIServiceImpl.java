@@ -67,8 +67,15 @@ public class PKIServiceImpl implements PKIService {
     }
 
     @Override
-    public CertificateDetailsDTO getCertificateDetails(String serialNumber) {
-        return null;
+    public CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException {
+
+        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+        JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
+        if(cert != null)
+        {
+            return new CertificateDetailsDTO(certHolder,cert);
+        }
+        else return null;
     }
 
 
