@@ -38,6 +38,8 @@ public class PKIServiceImpl implements PKIService {
     private BigIntGenerator bigIntGenerator;
     @Autowired
     private RevokedCertificateServiceImpl revokedCertificateService;
+    @Autowired
+    private KeyExpirationServiceImpl keyExpirationService;
 
     private KeyPair keyPairSubject = generateKeyPair();
     private X509Certificate cert;
@@ -121,6 +123,9 @@ public class PKIServiceImpl implements PKIService {
             issuerChainX509[i+1] = (X509Certificate) issuerChain[i];
         }
 
+        //  zapamti kad kljuc istice za sertifikat
+        keyExpirationService.save(issuerChainX509[0]);
+
        // store.saveCertificate(new X509Certificate[]{cert, issuerCertificate}, keyPairSubject.getPrivate(), fileLocation);
         store.saveCertificate(issuerChainX509, keyPairSubject.getPrivate(), fileLocation);
         System.out.println("********SAVED********");
@@ -202,13 +207,18 @@ public class PKIServiceImpl implements PKIService {
                 return false;
             }
 
+            //proveri kljuc?
+            if(keyExpirationService.expired(x509Cert.getSerialNumber().toString())) {
+                System.out.println("SERTIFIKATU: "+x509Cert.getSerialNumber()+" JE ISTEKAO KLJUC.");
+                return false;
+            }
+
         }
 
 
         System.out.println("SERTIFIKAT I LANAC SU VALIDNI.");
         return true;
     }
-
 
     private KeyPair generateKeyPair() {
         try {
