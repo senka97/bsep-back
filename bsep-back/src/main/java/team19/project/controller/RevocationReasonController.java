@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import team19.project.dto.RevocationReasonDTO;
 import team19.project.model.RevocationReason;
 import team19.project.service.impl.RevocationReasonServiceImpl;
 
@@ -19,7 +20,7 @@ public class RevocationReasonController {
       private RevocationReasonServiceImpl revocationReasonService;
 
     @GetMapping(value="/getAllRevocationReasons", produces="application/json")
-    public List<RevocationReason> getAllRevocationReason(){
+    public List<RevocationReasonDTO> getAllRevocationReason(){
 
         return this.revocationReasonService.findAll();
     }
