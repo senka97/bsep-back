@@ -35,7 +35,7 @@ public class PKIServiceImpl implements PKIService {
     @Autowired
     private StoreCertificates store;
     @Autowired
-    BigIntGenerator bigIntGenerator;
+    private BigIntGenerator bigIntGenerator;
     @Autowired
     private RevokedCertificateServiceImpl revokedCertificateService;
 
@@ -82,7 +82,7 @@ public class PKIServiceImpl implements PKIService {
             // ovo polje ce imati vrednost i samim tim nece se izvrsiti linija 93 nego linija 102 i program ce puci
             issuerCertificate = null;
             IssuerData issuerData = generateIssuerData(certificateDTO);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsage());
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsageList(), null);
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.INTERMEDIATE)) {
 
@@ -90,7 +90,7 @@ public class PKIServiceImpl implements PKIService {
             String serialNumber = certificateDTO.getIssuerSerialNumber();
             IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
             issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsage());
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsageList(), null);
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.END_ENTITY)) {
 
@@ -99,7 +99,7 @@ public class PKIServiceImpl implements PKIService {
             IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
             issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
             cert = certificateGenerator.generateCertificate(subjectData, issuerData,
-                    false, certificateDTO.getKeyUsage());
+                    false, certificateDTO.getKeyUsageList(), certificateDTO.getExtendedKeyUsageList());
         }
 
         if (cert == null) {

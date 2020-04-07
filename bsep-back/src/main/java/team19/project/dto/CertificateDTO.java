@@ -2,6 +2,9 @@ package team19.project.dto;
 
 import team19.project.utils.CertificateType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CertificateDTO {
 
     private String subjectCommonName;
@@ -15,15 +18,15 @@ public class CertificateDTO {
     private String endDate;
     private String issuerSerialNumber;
     private CertificateType certificateType;
-    private int keyUsage;
-    private String extendedKeyUsage;
+    private List<Integer> keyUsageList;
+    private List<String> extendedKeyUsageList;
 
     public CertificateDTO() { }
 
     public CertificateDTO(String subjectCommonName, String subjectFirstName,
                           String subjectLastName, String subjectEmail, String subjectOrganization,
                           String subjectOrganizationUnit, String subjectCountry, String startDate, String endDate,
-                          String issuerSerialNumber, CertificateType certificateType, int keyUsage, String extendedKeyUsage) {
+                          String issuerSerialNumber, CertificateType certificateType) {
         this.subjectCommonName = subjectCommonName;
         this.subjectFirstName = subjectFirstName;
         this.subjectLastName = subjectLastName;
@@ -35,8 +38,8 @@ public class CertificateDTO {
         this.endDate = endDate;
         this.issuerSerialNumber = issuerSerialNumber;
         this.certificateType = certificateType;
-        this.keyUsage = keyUsage;
-        this.extendedKeyUsage = extendedKeyUsage;
+        this.keyUsageList = new ArrayList<>();
+        this.extendedKeyUsageList = new ArrayList<>();
     }
 
     public String getSubjectCommonName() {
@@ -127,19 +130,19 @@ public class CertificateDTO {
         this.certificateType = certificateType;
     }
 
-    public int getKeyUsage() {
-        return keyUsage;
+    public List<Integer> getKeyUsageList() {
+        return keyUsageList;
     }
 
-    public void setKeyUsage(int keyUsage) {
-        this.keyUsage = keyUsage;
+    public void setKeyUsageList(List<Integer> keyUsageList) {
+        this.keyUsageList = keyUsageList;
     }
 
-    public String getExtendedKeyUsage() {
-        return extendedKeyUsage;
+    public List<String> getExtendedKeyUsageList() {
+        return extendedKeyUsageList;
     }
 
-    public void setExtendedKeyUsage(String extendedKeyUsage) {
-        this.extendedKeyUsage = extendedKeyUsage;
+    public void setExtendedKeyUsageList(List<String> extendedKeyUsageList) {
+        this.extendedKeyUsageList = extendedKeyUsageList;
     }
 }
