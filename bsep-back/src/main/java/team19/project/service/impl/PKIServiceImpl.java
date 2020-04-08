@@ -1,5 +1,6 @@
 package team19.project.service.impl;
 
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -63,8 +64,8 @@ public class PKIServiceImpl implements PKIService {
             }
 
         }
-        System.out.println("Duzina liste svih sertifikata:");
-        System.out.println(certificateBasicDTOS.size());
+        //System.out.println("Duzina liste svih sertifikata:");
+       // System.out.println(certificateBasicDTOS.size());
         return certificateBasicDTOS;
     }
 
@@ -72,10 +73,29 @@ public class PKIServiceImpl implements PKIService {
     public CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException {
 
         X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
-        JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
+
         if(cert != null)
         {
-            return new CertificateDetailsDTO(certHolder,cert);
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
+            Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocation);
+            //System.out.println("Duzina lanca "+ chain.length);
+            X509Certificate x509Cert;
+            Boolean isRoot;
+            if(chain.length==1)
+            { //ako je root onda nema nadredjenih
+                 x509Cert = (X509Certificate) chain[0];
+                 isRoot = true;
+            }
+            else
+            {
+                x509Cert = (X509Certificate) chain[1];
+                isRoot = false;
+            }
+
+            String issuerSerialNumber = x509Cert.getSerialNumber().toString();
+
+            CertificateDetailsDTO cddto = new CertificateDetailsDTO(certHolder,cert,issuerSerialNumber,isRoot);
+            return cddto;
         }
         else return null;
     }

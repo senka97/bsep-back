@@ -23,7 +23,7 @@ public class PKIController {
     private PKIServiceImpl pkiService;
 
     @GetMapping(value="/getCertificateDetails/{serialNumber}", produces = "application/json")
-    public CertificateDetailsDTO getCertificateDetails(@PathVariable("serialNumber") String serialNumber){
+    public CertificateDetailsDTO getCertificateDetails(@PathVariable("serialNumber") String serialNumber) throws CertificateEncodingException {
 
         return pkiService.getCertificateDetails(serialNumber);
     }
