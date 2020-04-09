@@ -1,8 +1,11 @@
 package team19.project.service.impl;
 
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team19.project.dto.CertificateBasicDTO;
@@ -84,7 +87,7 @@ public class PKIServiceImpl implements PKIService {
             // ovo polje ce imati vrednost i samim tim nece se izvrsiti linija 93 nego linija 102 i program ce puci
             issuerCertificate = null;
             IssuerData issuerData = generateIssuerData(certificateDTO);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsageList(), null);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, certificateDTO);
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.INTERMEDIATE)) {
 
@@ -92,7 +95,7 @@ public class PKIServiceImpl implements PKIService {
             String serialNumber = certificateDTO.getIssuerSerialNumber();
             IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
             issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
-            cert = certificateGenerator.generateCertificate(subjectData, issuerData, true, certificateDTO.getKeyUsageList(), null);
+            cert = certificateGenerator.generateCertificate(subjectData, issuerData, certificateDTO);
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.END_ENTITY)) {
 
@@ -101,7 +104,7 @@ public class PKIServiceImpl implements PKIService {
             IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
             issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
             cert = certificateGenerator.generateCertificate(subjectData, issuerData,
-                    false, certificateDTO.getKeyUsageList(), certificateDTO.getExtendedKeyUsageList());
+                    certificateDTO);
         }
 
         if (cert == null) {
@@ -150,6 +153,18 @@ public class PKIServiceImpl implements PKIService {
             }
         }
         return issuerDTOS;
+    }
+
+    @Override
+    public String getAKI(String serialNumber) {
+
+        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+        byte[] extensionValue = cert.getExtensionValue("2.5.29.14");
+        byte[] octets = DEROctetString.getInstance(extensionValue).getOctets();
+        SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(octets);
+        byte[] keyIdentifier = subjectKeyIdentifier.getKeyIdentifier();
+        String keyIdentifierHex = new String(Hex.encode(keyIdentifier));
+        return keyIdentifierHex;
     }
 
     @Override
@@ -249,6 +264,7 @@ public class PKIServiceImpl implements PKIService {
             builder.addRDN(BCStyle.GIVENNAME, certificateDTO.getSubjectFirstName());
             builder.addRDN(BCStyle.O, certificateDTO.getSubjectOrganization());
             builder.addRDN(BCStyle.OU, certificateDTO.getSubjectOrganizationUnit());
+            builder.addRDN(BCStyle.ST, certificateDTO.getSubjectState());
             builder.addRDN(BCStyle.C, certificateDTO.getSubjectCountry());
             builder.addRDN(BCStyle.E, certificateDTO.getSubjectEmail());
 
@@ -267,6 +283,7 @@ public class PKIServiceImpl implements PKIService {
             builder.addRDN(BCStyle.GIVENNAME, certificateDTO.getSubjectFirstName());
             builder.addRDN(BCStyle.O, certificateDTO.getSubjectOrganization());
             builder.addRDN(BCStyle.OU, certificateDTO.getSubjectOrganizationUnit());
+            builder.addRDN(BCStyle.ST, certificateDTO.getSubjectState());
             builder.addRDN(BCStyle.C, certificateDTO.getSubjectCountry());
             builder.addRDN(BCStyle.E, certificateDTO.getSubjectEmail());
 

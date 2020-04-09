@@ -13,6 +13,7 @@ public class CertificateDTO {
     private String subjectEmail;
     private String subjectOrganization;
     private String subjectOrganizationUnit;
+    private String subjectState;
     private String subjectCountry;
     private String startDate;
     private String endDate;
@@ -20,19 +21,24 @@ public class CertificateDTO {
     private CertificateType certificateType;
     private List<Integer> keyUsageList;
     private List<String> extendedKeyUsageList;
+    private int typeSAN;
+    private String valueSAN;
+    boolean basicConstraints;
+
 
     public CertificateDTO() { }
 
     public CertificateDTO(String subjectCommonName, String subjectFirstName,
                           String subjectLastName, String subjectEmail, String subjectOrganization,
-                          String subjectOrganizationUnit, String subjectCountry, String startDate, String endDate,
-                          String issuerSerialNumber, CertificateType certificateType) {
+                          String subjectOrganizationUnit, String subjectState, String subjectCountry, String startDate, String endDate,
+                          String issuerSerialNumber, CertificateType certificateType, int typeSAN, String valueSAN, boolean basicConstraints) {
         this.subjectCommonName = subjectCommonName;
         this.subjectFirstName = subjectFirstName;
         this.subjectLastName = subjectLastName;
         this.subjectEmail = subjectEmail;
         this.subjectOrganization = subjectOrganization;
         this.subjectOrganizationUnit = subjectOrganizationUnit;
+        this.subjectState = subjectState;
         this.subjectCountry = subjectCountry;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -40,6 +46,9 @@ public class CertificateDTO {
         this.certificateType = certificateType;
         this.keyUsageList = new ArrayList<>();
         this.extendedKeyUsageList = new ArrayList<>();
+        this.typeSAN = typeSAN;
+        this.valueSAN = valueSAN;
+        this.basicConstraints = basicConstraints;
     }
 
     public String getSubjectCommonName() {
@@ -144,5 +153,37 @@ public class CertificateDTO {
 
     public void setExtendedKeyUsageList(List<String> extendedKeyUsageList) {
         this.extendedKeyUsageList = extendedKeyUsageList;
+    }
+
+    public String getSubjectState() {
+        return subjectState;
+    }
+
+    public void setSubjectState(String subjectState) {
+        this.subjectState = subjectState;
+    }
+
+    public int getTypeSAN() {
+        return typeSAN;
+    }
+
+    public void setTypeSAN(int typeSAN) {
+        this.typeSAN = typeSAN;
+    }
+
+    public String getValueSAN() {
+        return valueSAN;
+    }
+
+    public void setValueSAN(String valueSAN) {
+        this.valueSAN = valueSAN;
+    }
+
+    public boolean isBasicConstraints() {
+        return basicConstraints;
+    }
+
+    public void setBasicConstraints(boolean basicConstraints) {
+        this.basicConstraints = basicConstraints;
     }
 }

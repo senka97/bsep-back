@@ -16,5 +16,6 @@ public interface PKIService {
     boolean addNewCertificate(CertificateDTO certificateDTO) throws CertificateEncodingException; //mozda druga povratna vrednost
     boolean checkValidityStatus(String serialNumber);
     List<IssuerDTO> getAllCA() throws CertificateEncodingException;
+    String getAKI(String serialNumber);
 
 }
