@@ -61,10 +61,7 @@ public class PKIServiceImpl implements PKIService {
 
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
 
-            //ovde jos provera pored toga sto je ca, da li je povucen, ili bi mozda bolje moglo da li je validan
-            if(!this.revokedCertificateService.checkRevocationStatusOCSP(((X509Certificate) c).getSerialNumber().toString())){
-                certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
-            }
+            certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
 
         }
         //System.out.println("Duzina liste svih sertifikata:");
@@ -73,7 +70,7 @@ public class PKIServiceImpl implements PKIService {
     }
 
     @Override
-    public CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException {
+    public CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException, CertificateParsingException {
 
         X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
 

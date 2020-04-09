@@ -1,14 +1,23 @@
 package team19.project.dto;
 
+import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.util.encoders.Hex;
 
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class CertificateDetailsDTO {
 
@@ -35,19 +44,18 @@ public class CertificateDetailsDTO {
     private String issuerSerialNumber;
 
     private String type;
-    private String[] subjectAlternativeNames;
+    private List<String> subjectAlternativeNames;
     private String authorityKeyIdentifier;
     private String subjectKeyIdentifier;
-    // key usage
-    // extended key usage
+    private List<Integer> keyUsageList;
+    private List<String> extendedKeyUsageList;
 
     public CertificateDetailsDTO()
     {
 
     }
 
-    public CertificateDetailsDTO(JcaX509CertificateHolder certificateHolder, X509Certificate cert, String issuerSerialNumber, Boolean isRoot)
-    {
+    public CertificateDetailsDTO(JcaX509CertificateHolder certificateHolder, X509Certificate cert, String issuerSerialNumber, Boolean isRoot) throws CertificateParsingException {
         this.serialNumber = certificateHolder.getSerialNumber().toString();
         this.version =certificateHolder.getVersionNumber();
         //this.signatureAlgorithm = certificateHolder.getSignatureAlgorithm().toString();
@@ -77,6 +85,44 @@ public class CertificateDetailsDTO {
             this.type = "END-ENTITY";
         }
 
+        //subject key identifier
+        SubjectKeyIdentifier subjectKeyIdent = SubjectKeyIdentifier.getInstance(DEROctetString.getInstance(cert.getExtensionValue("2.5.29.14")).getOctets());
+        byte[] keyIdentifier = subjectKeyIdent.getKeyIdentifier();
+        this.subjectKeyIdentifier = new String(Hex.encode(keyIdentifier));
+
+        //authority key identifier
+        if(!isRoot){
+            AuthorityKeyIdentifier authorityKeyIdent = AuthorityKeyIdentifier.getInstance(DEROctetString.getInstance(cert.getExtensionValue("2.5.29.35")).getOctets());
+            keyIdentifier = authorityKeyIdent.getKeyIdentifier();
+            this.authorityKeyIdentifier = new String(Hex.encode(keyIdentifier));
+        }
+
+        //Extended key usage
+        if(cert.getExtendedKeyUsage() != null)
+        {
+            this.extendedKeyUsageList = new ArrayList<>();
+            for(String s :cert.getExtendedKeyUsage())
+            {
+                System.out.println("Extended key usage");
+                System.out.println(s);
+                switch (s){
+                    case "1.3.6.5.5.7.3.3": this.extendedKeyUsageList.add("Code signing"); break;
+                    case "1.3.6.5.5.7.3.1": this.extendedKeyUsageList.add("Server Authentication"); break;
+                    case "1.3.6.5.5.7.3.2": this.extendedKeyUsageList.add("Client Authentication"); break;
+                    case "1.3.6.5.5.7.3.9": this.extendedKeyUsageList.add("OCSP signing"); break;
+                }
+
+            }
+        }
+
+        //subject alternative names
+        //this.subjectAlternativeNames = new ArrayList<>();
+
+
+        //key usage
+        //this.keyUsageList = new ArrayList<>();
+
+
     }
 
     private void generateSubject(X500Name subject)
@@ -103,6 +149,12 @@ public class CertificateDetailsDTO {
         if(temp.length()!=0)
         {
             this.subject = this.subject + "; OU=" + temp;
+        }
+        cn = subject.getRDNs(BCStyle.ST)[0];
+        temp = IETFUtils.valueToString(cn.getFirst().getValue());
+        if(temp.length()!=0)
+        {
+            this.subject = this.subject + "; ST=" + temp;
         }
         cn = subject.getRDNs(BCStyle.C)[0];
         temp = IETFUtils.valueToString(cn.getFirst().getValue());
@@ -142,6 +194,12 @@ public class CertificateDetailsDTO {
         if(temp.length()!=0)
         {
             this.issuer = this.issuer + "; OU=" + temp;
+        }
+        cn = issuer.getRDNs(BCStyle.ST)[0];
+        temp = IETFUtils.valueToString(cn.getFirst().getValue());
+        if(temp.length()!=0)
+        {
+            this.issuer = this.issuer + "; ST=" + temp;
         }
         cn = issuer.getRDNs(BCStyle.C)[0];
         temp = IETFUtils.valueToString(cn.getFirst().getValue());
@@ -277,11 +335,11 @@ public class CertificateDetailsDTO {
     }
 
 
-    public String[] getSubjectAlternativeNames() {
+    public List<String> getSubjectAlternativeNames() {
         return subjectAlternativeNames;
     }
 
-    public void setSubjectAlternativeNames(String[] subjectAlternativeNames) {
+    public void setSubjectAlternativeNames(List<String> subjectAlternativeNames) {
         this.subjectAlternativeNames = subjectAlternativeNames;
     }
 
@@ -340,4 +398,22 @@ public class CertificateDetailsDTO {
     public void setIsRoot(Boolean root) {
         isRoot = root;
     }
+
+    public List<Integer> getKeyUsageList() {
+        return keyUsageList;
+    }
+
+    public void setKeyUsageList(List<Integer> keyUsageList) {
+        this.keyUsageList = keyUsageList;
+    }
+
+    public List<String> getExtendedKeyUsageList() {
+        return extendedKeyUsageList;
+    }
+
+    public void setExtendedKeyUsageList(List<String> extendedKeyUsageList) {
+        this.extendedKeyUsageList = extendedKeyUsageList;
+    }
+
+
 }
