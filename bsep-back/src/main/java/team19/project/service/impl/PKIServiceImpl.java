@@ -6,6 +6,7 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,7 +104,7 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public boolean addNewCertificate(CertificateDTO certificateDTO) throws CertificateEncodingException {
-
+        keyPairSubject = generateKeyPair();
         SubjectData subjectData = generateSubjectData(certificateDTO);
 
         if (certificateDTO.getCertificateType().equals(CertificateType.SELF_SIGNED)) {
@@ -137,6 +138,7 @@ public class PKIServiceImpl implements PKIService {
 
         //ako je self-signed
         if (issuerCertificate == null) {
+            keyExpirationService.save(cert);
             store.saveCertificate(new X509Certificate[]{cert}, keyPairSubject.getPrivate(), fileLocation);
             System.out.println("******** SAVED ROOT ********");
             return true;
@@ -171,7 +173,7 @@ public class PKIServiceImpl implements PKIService {
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
             if (((X509Certificate) c).getBasicConstraints() > -1) {
                 //ovde jos provera pored toga sto je ca, da li je povucen, ili bi mozda bolje moglo da li je validan
-                if(!this.revokedCertificateService.checkRevocationStatusOCSP(((X509Certificate) c).getSerialNumber().toString())){
+                if(checkValidityStatus(((X509Certificate) c).getSerialNumber().toString())){
                     issuerDTOS.add(new IssuerDTO(certHolder));
                 }
             }
