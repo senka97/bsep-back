@@ -1,5 +1,6 @@
 package team19.project.service.impl;
 
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -60,20 +61,43 @@ public class PKIServiceImpl implements PKIService {
 
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
 
-            //ovde jos provera pored toga sto je ca, da li je povucen, ili bi mozda bolje moglo da li je validan
-            if(!this.revokedCertificateService.checkRevocationStatusOCSP(((X509Certificate) c).getSerialNumber().toString())){
-                certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
-            }
+            certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
 
         }
-        System.out.println("Duzina liste svih sertifikata:");
-        System.out.println(certificateBasicDTOS.size());
+        //System.out.println("Duzina liste svih sertifikata:");
+       // System.out.println(certificateBasicDTOS.size());
         return certificateBasicDTOS;
     }
 
     @Override
-    public CertificateDetailsDTO getCertificateDetails(String serialNumber) {
-        return null;
+    public CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException, CertificateParsingException {
+
+        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+
+        if(cert != null)
+        {
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
+            Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocation);
+            //System.out.println("Duzina lanca "+ chain.length);
+            X509Certificate x509Cert;
+            Boolean isRoot;
+            if(chain.length==1)
+            { //ako je root onda nema nadredjenih
+                 x509Cert = (X509Certificate) chain[0];
+                 isRoot = true;
+            }
+            else
+            {
+                x509Cert = (X509Certificate) chain[1];
+                isRoot = false;
+            }
+
+            String issuerSerialNumber = x509Cert.getSerialNumber().toString();
+
+            CertificateDetailsDTO cddto = new CertificateDetailsDTO(certHolder,cert,issuerSerialNumber,isRoot);
+            return cddto;
+        }
+        else return null;
     }
 
 

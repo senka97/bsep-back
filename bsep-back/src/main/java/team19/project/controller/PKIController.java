@@ -11,6 +11,7 @@ import team19.project.dto.IssuerDTO;
 import team19.project.service.impl.PKIServiceImpl;
 
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.util.List;
 
 
@@ -23,7 +24,7 @@ public class PKIController {
     private PKIServiceImpl pkiService;
 
     @GetMapping(value="/getCertificateDetails/{serialNumber}", produces = "application/json")
-    public CertificateDetailsDTO getCertificateDetails(@PathVariable("serialNumber") String serialNumber){
+    public CertificateDetailsDTO getCertificateDetails(@PathVariable("serialNumber") String serialNumber) throws CertificateEncodingException, CertificateParsingException {
 
         return pkiService.getCertificateDetails(serialNumber);
     }
