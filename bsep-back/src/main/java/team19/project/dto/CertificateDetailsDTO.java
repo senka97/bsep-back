@@ -47,7 +47,7 @@ public class CertificateDetailsDTO {
     private List<String> subjectAlternativeNames;
     private String authorityKeyIdentifier;
     private String subjectKeyIdentifier;
-    private List<Integer> keyUsageList;
+    private List<String> keyUsageList;
     private List<String> extendedKeyUsageList;
 
     public CertificateDetailsDTO()
@@ -116,11 +116,63 @@ public class CertificateDetailsDTO {
         }
 
         //subject alternative names
-        //this.subjectAlternativeNames = new ArrayList<>();
-
+        if(cert.getSubjectAlternativeNames() != null) {
+            this.subjectAlternativeNames = new ArrayList<String>();
+            for (List<?> s : cert.getSubjectAlternativeNames()) {
+                String[] split = s.toString().replace("]", "").replace("[", "").split(",");
+                System.out.println(split[0] + " : " + split[1]);
+                Integer code = Integer.parseInt(split[0]);
+                switch (code) {
+                    case 2:
+                        this.subjectAlternativeNames.add("DNS Name = " + split[1]);
+                        break;
+                    case 6:
+                        this.subjectAlternativeNames.add("URI = " + split[1]);
+                        break;
+                    case 7:
+                        this.subjectAlternativeNames.add("IP Adress = " + split[1]);
+                        break;
+                }
+            }
+        }
 
         //key usage
-        //this.keyUsageList = new ArrayList<>();
+        this.keyUsageList = new ArrayList<String>();
+        if(cert.getKeyUsage()[0]){
+            keyUsageList.add("Digital Signature");
+        }
+
+        if(cert.getKeyUsage()[1]){
+            keyUsageList.add("Non Repudiation");
+        }
+
+        if(cert.getKeyUsage()[2]){
+            keyUsageList.add("Key Encipherment");
+        }
+
+        if(cert.getKeyUsage()[3]){
+            keyUsageList.add("Data Encipherment");
+        }
+
+        if(cert.getKeyUsage()[4]){
+            keyUsageList.add("Key Agreement");
+        }
+
+        if(cert.getKeyUsage()[5]){
+            keyUsageList.add("KeyCert Sign");
+        }
+
+        if(cert.getKeyUsage()[6]){
+            keyUsageList.add("CRL Sign");
+        }
+
+        if(cert.getKeyUsage()[7]){
+            keyUsageList.add("Encipher Only");
+        }
+
+        if(cert.getKeyUsage()[8]){
+            keyUsageList.add("Decipher Only");
+        }
 
 
     }
@@ -399,11 +451,11 @@ public class CertificateDetailsDTO {
         isRoot = root;
     }
 
-    public List<Integer> getKeyUsageList() {
+    public List<String> getKeyUsageList() {
         return keyUsageList;
     }
 
-    public void setKeyUsageList(List<Integer> keyUsageList) {
+    public void setKeyUsageList(List<String> keyUsageList) {
         this.keyUsageList = keyUsageList;
     }
 

@@ -81,6 +81,7 @@ public class CertificateGenerator {
             if(certDTO.getValueSAN() != null){
                 GeneralName altName = new GeneralName(certDTO.getTypeSAN(), certDTO.getValueSAN());
                 GeneralNames subjectAltName = new GeneralNames(altName);
+                System.out.println("Alt name: "+subjectAltName.getNames());
                 certGen.addExtension(Extension.subjectAlternativeName,false,subjectAltName);
             }
 
