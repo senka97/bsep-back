@@ -34,8 +34,12 @@ public class RevokedCertificateServiceImpl implements RevokedCertificateService 
     @Override
     public boolean revokeCertificate(RevokedCertificateDTO revokedCertificateDTO) {
 
-        RevokedCertificate rc = revokedCertificateRepository.findBySerialNumber(revokedCertificateDTO.getSerialNumber());
+        /*RevokedCertificate rc = revokedCertificateRepository.findBySerialNumber(revokedCertificateDTO.getSerialNumber());
         if(rc != null){
+            return true;
+        }*/
+        boolean revoked = this.checkRevocationStatusOCSP(revokedCertificateDTO.getSerialNumber());
+        if(revoked){
             return true;
         }
 

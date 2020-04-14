@@ -225,7 +225,7 @@ public class PKIServiceImpl implements PKIService {
 
             //provera potpisa
             try {
-                cert.verify(x509CACert.getPublicKey());
+                x509Cert.verify(x509CACert.getPublicKey());
             } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException
                     | SignatureException e) {
                 System.out.println("SERTIFIKAT: "+x509Cert.getSerialNumber()+" NEMA VALIDAN POTPIS.");
