@@ -1,12 +1,18 @@
 package team19.project.service;
 
+import org.springframework.core.io.InputStreamResource;
 import team19.project.dto.CertificateBasicDTO;
 import team19.project.dto.CertificateDTO;
 import team19.project.dto.CertificateDetailsDTO;
 import team19.project.dto.IssuerDTO;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,5 +24,5 @@ public interface PKIService {
     boolean checkValidityStatus(String serialNumber);
     List<IssuerDTO> getAllCA() throws CertificateEncodingException;
     String getAKI(String serialNumber);
-
+    byte[] getCertificateDownload(String serialNumber) throws CertificateEncodingException;
 }

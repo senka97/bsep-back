@@ -9,7 +9,7 @@ import team19.project.dto.CertificateDTO;
 import team19.project.dto.CertificateDetailsDTO;
 import team19.project.dto.IssuerDTO;
 import team19.project.service.impl.PKIServiceImpl;
-
+import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.util.List;
@@ -34,6 +34,13 @@ public class PKIController {
 
         return pkiService.getAllCertificates();
     }
+
+    @GetMapping(value="/downloadCertificate/{serialNumber}")
+    public ResponseEntity<?> downloadCertificate(@PathVariable("serialNumber") String serialNumber) throws CertificateEncodingException, IOException {
+        byte cert[] = pkiService.getCertificateDownload(serialNumber);
+        return new ResponseEntity<>(cert, HttpStatus.OK);
+    }
+
 
     @GetMapping(value="/getAllCA", produces="application/json")
     public List<IssuerDTO> getAllCA() throws CertificateEncodingException {
@@ -63,8 +70,5 @@ public class PKIController {
 
         return new ResponseEntity<>(pkiService.getAKI(serialNumber), HttpStatus.OK);
     }
-
-
-
 
 }

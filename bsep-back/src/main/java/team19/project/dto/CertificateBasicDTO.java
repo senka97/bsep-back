@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 
 public class CertificateBasicDTO {
 
-    //ove ce ici neke osnovne informacije o sertifikatima kada se oni prikazuju u listi
     private String serialNumber;
     private String startDate;
     private String endDate;
@@ -29,28 +28,25 @@ public class CertificateBasicDTO {
 
         X500Name subject = certificateHolder.getSubject();
         String temp;
-        RDN cn = subject.getRDNs(BCStyle.CN)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length() != 0)
-        {
-            this.subject =  "CN=" + temp;
+        RDN cn;
+        if(subject.getRDNs(BCStyle.CN).length > 0) {
+            cn = subject.getRDNs(BCStyle.CN)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
+            this.subject = "CN=" + temp;
         }
-        cn = subject.getRDNs(BCStyle.O)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
-            this.subject = this.subject + "; 0=" + temp;
+        if(subject.getRDNs(BCStyle.O).length > 0) {
+            cn = subject.getRDNs(BCStyle.O)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
+            this.subject = this.subject + "; O=" + temp;
         }
-        cn = subject.getRDNs(BCStyle.OU)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(subject.getRDNs(BCStyle.OU).length > 0) {
+            cn = subject.getRDNs(BCStyle.OU)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.subject = this.subject + "; OU=" + temp;
         }
-        cn = subject.getRDNs(BCStyle.C)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(subject.getRDNs(BCStyle.C).length > 0) {
+            cn = subject.getRDNs(BCStyle.C)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.subject = this.subject + "; C=" + temp;
         }
 

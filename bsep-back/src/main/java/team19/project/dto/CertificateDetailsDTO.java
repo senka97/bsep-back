@@ -179,91 +179,94 @@ public class CertificateDetailsDTO {
 
     private void generateSubject(X500Name subject)
     {
-        RDN cn = subject.getRDNs(BCStyle.E)[0];
-        this.subjectEmail = IETFUtils.valueToString(cn.getFirst().getValue());
+        RDN cn;
+        if(subject.getRDNs(BCStyle.E).length > 0) {
+            cn = subject.getRDNs(BCStyle.E)[0];
+            this.subjectEmail = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
 
         String temp;
-        cn = subject.getRDNs(BCStyle.CN)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        this.subjectCommonName = temp;
-        if(temp.length() != 0)
-        {
-            this.subject =  "CN=" + temp;
+        if(subject.getRDNs(BCStyle.CN).length > 0) {
+            cn = subject.getRDNs(BCStyle.CN)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
+            this.subjectCommonName = temp;
+            this.subject = "CN=" + temp;
         }
-        cn = subject.getRDNs(BCStyle.O)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
-            this.subject = this.subject + "; 0=" + temp;
+        if(subject.getRDNs(BCStyle.O).length > 0) {
+            cn = subject.getRDNs(BCStyle.O)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
+            this.subject = this.subject + "; O=" + temp;
+
         }
-        cn = subject.getRDNs(BCStyle.OU)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(subject.getRDNs(BCStyle.OU).length > 0) {
+            cn = subject.getRDNs(BCStyle.OU)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.subject = this.subject + "; OU=" + temp;
         }
-        cn = subject.getRDNs(BCStyle.ST)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(subject.getRDNs(BCStyle.ST).length > 0) {
+            cn = subject.getRDNs(BCStyle.ST)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.subject = this.subject + "; ST=" + temp;
         }
-        cn = subject.getRDNs(BCStyle.C)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(subject.getRDNs(BCStyle.C).length > 0) {
+            cn = subject.getRDNs(BCStyle.C)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.subject = this.subject + "; C=" + temp;
         }
-
-        cn = subject.getRDNs(BCStyle.GIVENNAME)[0];
-        this.subjectGivenname = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.SURNAME)[0];
-        this.subjectSurname= IETFUtils.valueToString(cn.getFirst().getValue());
+        if(subject.getRDNs(BCStyle.GIVENNAME).length > 0) {
+            cn = subject.getRDNs(BCStyle.GIVENNAME)[0];
+            this.subjectGivenname = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.SURNAME).length > 0) {
+            cn = subject.getRDNs(BCStyle.SURNAME)[0];
+            this.subjectSurname = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
 
     }
 
     private void generateIssuer(X500Name issuer)
     {
-        RDN cn = issuer.getRDNs(BCStyle.E)[0];
-        this.issuerEmail = IETFUtils.valueToString(cn.getFirst().getValue());
+        RDN cn;
+        if(issuer.getRDNs(BCStyle.E).length > 0) {
+            cn = issuer.getRDNs(BCStyle.E)[0];
+            this.issuerEmail = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
 
         String temp;
-        cn = issuer.getRDNs(BCStyle.CN)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        this.issuerCommonName = temp;
-        if(temp.length() != 0)
-        {
-            this.issuer =  "CN=" + temp;
+        if(issuer.getRDNs(BCStyle.CN).length > 0) {
+            cn = issuer.getRDNs(BCStyle.CN)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
+            this.issuerCommonName = temp;
+            this.issuer = "CN=" + temp;
         }
-        cn = issuer.getRDNs(BCStyle.O)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
-            this.issuer = this.issuer + "; 0=" + temp;
+        if(issuer.getRDNs(BCStyle.O).length > 0) {
+            cn = issuer.getRDNs(BCStyle.O)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
+            this.issuer = this.issuer + "; O=" + temp;
         }
-        cn = issuer.getRDNs(BCStyle.OU)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(issuer.getRDNs(BCStyle.OU).length > 0) {
+            cn = issuer.getRDNs(BCStyle.OU)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.issuer = this.issuer + "; OU=" + temp;
         }
-        cn = issuer.getRDNs(BCStyle.ST)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(issuer.getRDNs(BCStyle.ST).length > 0) {
+            cn = issuer.getRDNs(BCStyle.ST)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.issuer = this.issuer + "; ST=" + temp;
         }
-        cn = issuer.getRDNs(BCStyle.C)[0];
-        temp = IETFUtils.valueToString(cn.getFirst().getValue());
-        if(temp.length()!=0)
-        {
+        if(issuer.getRDNs(BCStyle.C).length > 0) {
+            cn = issuer.getRDNs(BCStyle.C)[0];
+            temp = IETFUtils.valueToString(cn.getFirst().getValue());
             this.issuer = this.issuer + "; C=" + temp;
         }
-
-        cn = issuer.getRDNs(BCStyle.GIVENNAME)[0];
-        this.issuerGivenname = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = issuer.getRDNs(BCStyle.SURNAME)[0];
-        this.issuerSurname= IETFUtils.valueToString(cn.getFirst().getValue());
+        if(issuer.getRDNs(BCStyle.GIVENNAME).length > 0) {
+            cn = issuer.getRDNs(BCStyle.GIVENNAME)[0];
+            this.issuerGivenname = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(issuer.getRDNs(BCStyle.SURNAME).length > 0) {
+            cn = issuer.getRDNs(BCStyle.SURNAME)[0];
+            this.issuerSurname = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
     }
 
     public String getSerialNumber() {

@@ -22,20 +22,35 @@ public class IssuerDTO {
     public IssuerDTO(JcaX509CertificateHolder issuerHolder){
         this.serialNumber = issuerHolder.getSerialNumber().toString();
         X500Name subject = issuerHolder.getSubject();
-        RDN cn = subject.getRDNs(BCStyle.CN)[0];
-        this.commonName = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.SURNAME)[0];
-        this.surname = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.GIVENNAME)[0];
-        this.givenName = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.O)[0];
-        this.org = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.OU)[0];
-        this.orgUnit = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.C)[0];
-        this.country = IETFUtils.valueToString(cn.getFirst().getValue());
-        cn = subject.getRDNs(BCStyle.E)[0];
-        this.email = IETFUtils.valueToString(cn.getFirst().getValue());
+        RDN cn;
+        if(subject.getRDNs(BCStyle.CN).length > 0) {
+            cn = subject.getRDNs(BCStyle.CN)[0];
+            this.commonName = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.SURNAME).length > 0) {
+            cn = subject.getRDNs(BCStyle.SURNAME)[0];
+            this.surname = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.GIVENNAME).length > 0) {
+            cn = subject.getRDNs(BCStyle.GIVENNAME)[0];
+            this.givenName = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.O).length > 0) {
+            cn = subject.getRDNs(BCStyle.O)[0];
+            this.org = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.OU).length > 0) {
+            cn = subject.getRDNs(BCStyle.OU)[0];
+            this.orgUnit = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.C).length > 0) {
+            cn = subject.getRDNs(BCStyle.C)[0];
+            this.country = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
+        if(subject.getRDNs(BCStyle.E).length > 0) {
+            cn = subject.getRDNs(BCStyle.E)[0];
+            this.email = IETFUtils.valueToString(cn.getFirst().getValue());
+        }
     }
 
     public String getSerialNumber() {
