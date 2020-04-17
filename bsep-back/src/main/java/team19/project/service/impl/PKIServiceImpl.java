@@ -9,6 +9,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import team19.project.dto.CertificateBasicDTO;
 import team19.project.dto.CertificateDTO;
@@ -22,15 +23,13 @@ import team19.project.utils.BigIntGenerator;
 import team19.project.utils.CertificateGenerator;
 import team19.project.utils.CertificateType;
 
+import java.io.*;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class PKIServiceImpl implements PKIService {
@@ -193,6 +192,13 @@ public class PKIServiceImpl implements PKIService {
         return keyIdentifierHex;
     }
 
+
+    @Override
+    public byte[] getCertificateDownload(String serialNumber) throws CertificateEncodingException {
+        X509Certificate x509Cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber,fileLocation);
+        return Base64.getEncoder().encode(x509Cert.getEncoded());
+    }
+
     @Override
     public boolean checkValidityStatus(String serialNumber) {
 
@@ -285,14 +291,30 @@ public class PKIServiceImpl implements PKIService {
             String serialNumber = bigIntGenerator.generateRandom().toString();
 
             X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-            builder.addRDN(BCStyle.CN, certificateDTO.getSubjectCommonName());
-            builder.addRDN(BCStyle.SURNAME, certificateDTO.getSubjectLastName());
-            builder.addRDN(BCStyle.GIVENNAME, certificateDTO.getSubjectFirstName());
-            builder.addRDN(BCStyle.O, certificateDTO.getSubjectOrganization());
-            builder.addRDN(BCStyle.OU, certificateDTO.getSubjectOrganizationUnit());
-            builder.addRDN(BCStyle.ST, certificateDTO.getSubjectState());
-            builder.addRDN(BCStyle.C, certificateDTO.getSubjectCountry());
-            builder.addRDN(BCStyle.E, certificateDTO.getSubjectEmail());
+            if(!certificateDTO.getSubjectCommonName().equals("")) {
+                builder.addRDN(BCStyle.CN, certificateDTO.getSubjectCommonName());
+            }
+            if(!certificateDTO.getSubjectLastName().equals("")) {
+                builder.addRDN(BCStyle.SURNAME, certificateDTO.getSubjectLastName());
+            }
+            if(!certificateDTO.getSubjectFirstName().equals("")) {
+                builder.addRDN(BCStyle.GIVENNAME, certificateDTO.getSubjectFirstName());
+            }
+            if(!certificateDTO.getSubjectOrganization().equals("")) {
+                builder.addRDN(BCStyle.O, certificateDTO.getSubjectOrganization());
+            }
+            if(!certificateDTO.getSubjectOrganizationUnit().equals("")) {
+                builder.addRDN(BCStyle.OU, certificateDTO.getSubjectOrganizationUnit());
+            }
+            if(!certificateDTO.getSubjectState().equals("")){
+                builder.addRDN(BCStyle.ST, certificateDTO.getSubjectState());
+            }
+            if(!certificateDTO.getSubjectCountry().equals("")) {
+                builder.addRDN(BCStyle.C, certificateDTO.getSubjectCountry());
+            }
+            if(!certificateDTO.getSubjectEmail().equals("")) {
+                builder.addRDN(BCStyle.E, certificateDTO.getSubjectEmail());
+            }
 
             return new SubjectData(keyPairSubject.getPublic(), builder.build(), serialNumber, startDate, endDate);
         } catch (ParseException e) {
@@ -304,14 +326,30 @@ public class PKIServiceImpl implements PKIService {
     private IssuerData generateIssuerData(CertificateDTO certificateDTO) {
         try {
             X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-            builder.addRDN(BCStyle.CN, certificateDTO.getSubjectCommonName());
-            builder.addRDN(BCStyle.SURNAME, certificateDTO.getSubjectLastName());
-            builder.addRDN(BCStyle.GIVENNAME, certificateDTO.getSubjectFirstName());
-            builder.addRDN(BCStyle.O, certificateDTO.getSubjectOrganization());
-            builder.addRDN(BCStyle.OU, certificateDTO.getSubjectOrganizationUnit());
-            builder.addRDN(BCStyle.ST, certificateDTO.getSubjectState());
-            builder.addRDN(BCStyle.C, certificateDTO.getSubjectCountry());
-            builder.addRDN(BCStyle.E, certificateDTO.getSubjectEmail());
+            if(!certificateDTO.getSubjectCommonName().equals("")) {
+                builder.addRDN(BCStyle.CN, certificateDTO.getSubjectCommonName());
+            }
+            if(!certificateDTO.getSubjectLastName().equals("")) {
+                builder.addRDN(BCStyle.SURNAME, certificateDTO.getSubjectLastName());
+            }
+            if(!certificateDTO.getSubjectFirstName().equals("")) {
+                builder.addRDN(BCStyle.GIVENNAME, certificateDTO.getSubjectFirstName());
+            }
+            if(!certificateDTO.getSubjectOrganization().equals("")) {
+                builder.addRDN(BCStyle.O, certificateDTO.getSubjectOrganization());
+            }
+            if(!certificateDTO.getSubjectOrganizationUnit().equals("")) {
+                builder.addRDN(BCStyle.OU, certificateDTO.getSubjectOrganizationUnit());
+            }
+            if(!certificateDTO.getSubjectState().equals("")){
+                builder.addRDN(BCStyle.ST, certificateDTO.getSubjectState());
+            }
+            if(!certificateDTO.getSubjectCountry().equals("")) {
+                builder.addRDN(BCStyle.C, certificateDTO.getSubjectCountry());
+            }
+            if(!certificateDTO.getSubjectEmail().equals("")) {
+                builder.addRDN(BCStyle.E, certificateDTO.getSubjectEmail());
+            }
 
             return new IssuerData(keyPairSubject.getPrivate(), builder.build());
         } catch (Exception e) {
