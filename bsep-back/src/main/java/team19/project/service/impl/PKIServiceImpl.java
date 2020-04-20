@@ -1,20 +1,16 @@
 package team19.project.service.impl;
 
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
-import team19.project.dto.CertificateBasicDTO;
-import team19.project.dto.CertificateDTO;
-import team19.project.dto.CertificateDetailsDTO;
-import team19.project.dto.IssuerDTO;
+import team19.project.dto.*;
+import team19.project.model.CertificateDB;
+import team19.project.model.RevocationReason;
 import team19.project.utils.IssuerData;
 import team19.project.utils.SubjectData;
 import team19.project.repository.StoreCertificates;
@@ -44,37 +40,90 @@ public class PKIServiceImpl implements PKIService {
     private RevokedCertificateServiceImpl revokedCertificateService;
     @Autowired
     private KeyExpirationServiceImpl keyExpirationService;
+    @Autowired
+    private CertificateDBServiceImpl certificateDBService;
+    @Autowired
+    private RevocationReasonServiceImpl revocationReasonService;
 
     private KeyPair keyPairSubject = generateKeyPair();
     private X509Certificate cert;
     private X509Certificate issuerCertificate;
-    private String fileLocation = "keystore/keystore.jks";
+    private String fileLocationCA = "keystore/keystoreCA.jks";
+    private String fileLocationEE = "keystore/keystoreEE.jks";
+    private String passwordCA = "passwordCA";
+    private String passwordEE = "passwordEE";
 
     @Override
     public ArrayList<CertificateBasicDTO> getAllCertificates() throws CertificateEncodingException {
 
-        Enumeration<String> alisases = store.getAllAliases(fileLocation);
+        //Svi CA se citaju
+        Enumeration<String> alisases = store.getAllAliases(fileLocationCA, passwordCA);
         ArrayList<CertificateBasicDTO> certificateBasicDTOS = new ArrayList<>();
 
         while (alisases.hasMoreElements()) {
-            Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocation);
-
+            Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocationCA, passwordCA);
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
-
             certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
 
         }
-        //System.out.println("Duzina liste svih sertifikata:");
-       // System.out.println(certificateBasicDTOS.size());
+
+        //Svi end-entity se citaju
+        alisases = store.getAllAliases(fileLocationEE, passwordEE);
+
+        while (alisases.hasMoreElements()) {
+            Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocationEE, passwordEE);
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
+            certificateBasicDTOS.add(new CertificateBasicDTO(certHolder));
+
+        }
         return certificateBasicDTOS;
     }
 
     @Override
     public CertificateDetailsDTO getCertificateDetails(String serialNumber) throws CertificateEncodingException, CertificateParsingException {
 
-        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+        CertificateDB certDB = certificateDBService.findCertificate(serialNumber);
+        X509Certificate cert;
+        if(certDB.isCa()) {
+            cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocationCA, passwordCA);
+            if(cert != null) {
+                JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
+                Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocationCA, passwordCA);
+                X509Certificate x509Cert;
+                Boolean isRoot;
+                if (chain.length == 1) { //ako je root onda nema nadredjenih
+                    x509Cert = (X509Certificate) chain[0];
+                    isRoot = true;
+                } else {
+                    x509Cert = (X509Certificate) chain[1];
+                    isRoot = false;
+                }
 
-        if(cert != null)
+                String issuerSerialNumber = x509Cert.getSerialNumber().toString();
+
+                CertificateDetailsDTO cddto = new CertificateDetailsDTO(certHolder, cert, issuerSerialNumber, isRoot);
+                return cddto;
+            }else{
+                return null;
+            }
+
+        }else{
+            cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocationEE, passwordEE);
+            if(cert != null) {
+                JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
+                String issuerSerialNumber = certDB.getIssuerSerialNumber();
+                boolean isRoot = false;
+                CertificateDetailsDTO cddto = new CertificateDetailsDTO(certHolder, cert, issuerSerialNumber, isRoot);
+                return cddto;
+            }else{
+                return null;
+            }
+
+        }
+
+        //X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+
+        /*if(cert != null)
         {
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) cert);
             Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocation);
@@ -97,7 +146,8 @@ public class PKIServiceImpl implements PKIService {
             CertificateDetailsDTO cddto = new CertificateDetailsDTO(certHolder,cert,issuerSerialNumber,isRoot);
             return cddto;
         }
-        else return null;
+        else return null;*/
+
     }
 
 
@@ -115,18 +165,16 @@ public class PKIServiceImpl implements PKIService {
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.INTERMEDIATE)) {
 
-            Enumeration<String> aliases = store.getAllAliases(fileLocation);
             String serialNumber = certificateDTO.getIssuerSerialNumber();
-            IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
-            issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+            IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocationCA, passwordCA);
+            issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocationCA, passwordCA);
             cert = certificateGenerator.generateCertificate(subjectData, issuerData, certificateDTO);
 
         } else if (certificateDTO.getCertificateType().equals(CertificateType.END_ENTITY)) {
 
-            Enumeration<String> aliases = store.getAllAliases(fileLocation);
             String serialNumber = certificateDTO.getIssuerSerialNumber();
-            IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocation);
-            issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+            IssuerData issuerData = store.findIssuerBySerialNumber(serialNumber, fileLocationCA, passwordCA);
+            issuerCertificate = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocationCA, passwordCA);
             cert = certificateGenerator.generateCertificate(subjectData, issuerData,
                     certificateDTO);
         }
@@ -135,8 +183,48 @@ public class PKIServiceImpl implements PKIService {
             return false;
         }
 
+        if (certificateDTO.getCertificateType().equals(CertificateType.SELF_SIGNED)) {
+            keyExpirationService.save(cert);
+            store.saveCertificate(new X509Certificate[]{cert}, keyPairSubject.getPrivate(), fileLocationCA, passwordCA);
+            //sacuvam ga i u bazi
+            CertificateDB certDB = new CertificateDB(cert.getSerialNumber().toString(),null,true);
+            certificateDBService.save(certDB);
+            System.out.println("******** SAVED ROOT ********");
+        }
+
+        if (certificateDTO.getCertificateType().equals(CertificateType.INTERMEDIATE)) {
+            Certificate[] issuerChain = store.findCertificateChainBySerialNumber(certificateDTO.getIssuerSerialNumber(), fileLocationCA, passwordCA);
+            X509Certificate issuerChainX509[] = new X509Certificate[issuerChain.length + 1];
+            issuerChainX509[0] = cert;
+            for(int i=0;i<issuerChain.length;i++){
+                issuerChainX509[i+1] = (X509Certificate) issuerChain[i];
+            }
+
+            //  zapamti kad kljuc istice za sertifikat
+            keyExpirationService.save(issuerChainX509[0]);
+
+            // store.saveCertificate(new X509Certificate[]{cert, issuerCertificate}, keyPairSubject.getPrivate(), fileLocation);
+            store.saveCertificate(issuerChainX509, keyPairSubject.getPrivate(), fileLocationCA, passwordCA);
+            //sacuvam ga i u bazi
+            CertificateDB certDB = new CertificateDB(cert.getSerialNumber().toString(),certificateDTO.getIssuerSerialNumber(),true);
+            certificateDBService.save(certDB);
+            System.out.println("********SAVED INTERMEDIATE********");
+        }
+
+        if (certificateDTO.getCertificateType().equals(CertificateType.END_ENTITY)) {
+            keyExpirationService.save(cert);
+            store.saveCertificate(new X509Certificate[]{cert}, keyPairSubject.getPrivate(), fileLocationEE, passwordEE);
+            //sacuvam ga i u bazi
+            CertificateDB certDB = new CertificateDB(cert.getSerialNumber().toString(),certificateDTO.getIssuerSerialNumber(),false);
+            certificateDBService.save(certDB);
+            System.out.println("******** SAVED END-ENTITY ********");
+
+        }
+
+        return true;
+
         //ako je self-signed
-        if (issuerCertificate == null) {
+        /*if (issuerCertificate == null) {
             keyExpirationService.save(cert);
             store.saveCertificate(new X509Certificate[]{cert}, keyPairSubject.getPrivate(), fileLocation);
             System.out.println("******** SAVED ROOT ********");
@@ -158,17 +246,19 @@ public class PKIServiceImpl implements PKIService {
         store.saveCertificate(issuerChainX509, keyPairSubject.getPrivate(), fileLocation);
         System.out.println("********SAVED********");
 
-        return true;
+        return true;*/
     }
 
     @Override
     public List<IssuerDTO> getAllCA() throws CertificateEncodingException {
 
-        Enumeration<String> alisases = store.getAllAliases(fileLocation);
+        //Enumeration<String> alisases = store.getAllAliases(fileLocation);
+        Enumeration<String> alisases = store.getAllAliases(fileLocationCA, passwordCA);
         List<IssuerDTO> issuerDTOS = new ArrayList<>();
 
         while (alisases.hasMoreElements()) {
-            Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocation);
+            //Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocation);
+            Certificate c = store.findCertificateByAlias(alisases.nextElement(), fileLocationCA, passwordCA);
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) c);
             if (((X509Certificate) c).getBasicConstraints() > -1) {
                 //ovde jos provera pored toga sto je ca, da li je povucen, ili bi mozda bolje moglo da li je validan
@@ -183,7 +273,8 @@ public class PKIServiceImpl implements PKIService {
     @Override
     public String getAKI(String serialNumber) {
 
-        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+        //X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocationCA, passwordCA);
         byte[] extensionValue = cert.getExtensionValue("2.5.29.14");
         byte[] octets = DEROctetString.getInstance(extensionValue).getOctets();
         SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(octets);
@@ -195,14 +286,61 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public byte[] getCertificateDownload(String serialNumber) throws CertificateEncodingException {
-        X509Certificate x509Cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber,fileLocation);
+        CertificateDB certDB = certificateDBService.findCertificate(serialNumber);
+        X509Certificate x509Cert;
+        if(certDB.isCa()){
+            x509Cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber,fileLocationCA, passwordCA);
+        }else{
+            x509Cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber,fileLocationEE, passwordEE);
+        }
+
         return Base64.getEncoder().encode(x509Cert.getEncoded());
+        /*X509Certificate x509Cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber,fileLocation);
+        return Base64.getEncoder().encode(x509Cert.getEncoded());*/
+    }
+
+    @Override
+    public boolean revokeCertificate(RevokedCertificateDTO revokedCertificateDTO) {
+        boolean revoked = this.checkRevocationStatusOCSP(revokedCertificateDTO.getSerialNumber());
+        if(revoked){
+            return true;
+        }
+        RevocationReason revocationReason = revocationReasonService.findOne(revokedCertificateDTO.getIdRevocationReason());
+        CertificateDB certDB = certificateDBService.findCertificate(revokedCertificateDTO.getSerialNumber());
+        //prvo povucemo taj koji povlacimo
+        certDB.setRevocationReason(revocationReason);
+        certDB.setRevoked(true);
+        certificateDBService.save(certDB);
+        //onda ako on nije end-entity povucemo sve ispod njega
+        if(certDB.isCa()){ //ako je end-entity ne idemo dalje
+            revokeChildren(revokedCertificateDTO.getSerialNumber());
+        }
+        return false;
+    }
+
+    private void revokeChildren(String serialNumber){
+        ArrayList<CertificateDB> certsDB = (ArrayList<CertificateDB>) certificateDBService.findAllFirstChildren(serialNumber);
+        for(CertificateDB certDB: certsDB){
+            certDB.setRevoked(true);
+            certificateDBService.save(certDB);
+            revokeChildren(certDB.getSubjectSerialNumber());
+        }
+    }
+
+    @Override
+    public boolean checkRevocationStatusOCSP(String serialNumber) {
+        CertificateDB certDB = certificateDBService.findCertificate(serialNumber);
+        if(certDB.isRevoked()){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     @Override
     public boolean checkValidityStatus(String serialNumber) {
 
-        X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
+       /* X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
         Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocation);
 
         for(int i =0 ; i < chain.length; i++) {
@@ -263,7 +401,7 @@ public class PKIServiceImpl implements PKIService {
         }
 
 
-        System.out.println("SERTIFIKAT I LANAC SU VALIDNI.");
+        System.out.println("SERTIFIKAT I LANAC SU VALIDNI.");*/
         return true;
     }
 
