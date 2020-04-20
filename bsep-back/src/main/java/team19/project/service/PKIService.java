@@ -1,10 +1,7 @@
 package team19.project.service;
 
 import org.springframework.core.io.InputStreamResource;
-import team19.project.dto.CertificateBasicDTO;
-import team19.project.dto.CertificateDTO;
-import team19.project.dto.CertificateDetailsDTO;
-import team19.project.dto.IssuerDTO;
+import team19.project.dto.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,4 +22,6 @@ public interface PKIService {
     List<IssuerDTO> getAllCA() throws CertificateEncodingException;
     String getAKI(String serialNumber);
     byte[] getCertificateDownload(String serialNumber) throws CertificateEncodingException;
+    boolean revokeCertificate(RevokedCertificateDTO revokedCertificateDTO);
+    boolean checkRevocationStatusOCSP(String serialNumber);
 }

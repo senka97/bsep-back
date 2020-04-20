@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import team19.project.dto.CertificateBasicDTO;
-import team19.project.dto.CertificateDTO;
-import team19.project.dto.CertificateDetailsDTO;
-import team19.project.dto.IssuerDTO;
+import team19.project.dto.*;
 import team19.project.service.impl.PKIServiceImpl;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -69,6 +66,29 @@ public class PKIController {
     public ResponseEntity<String> getAKI(@PathVariable("serialNumber") String serialNumber){
 
         return new ResponseEntity<>(pkiService.getAKI(serialNumber), HttpStatus.OK);
+    }
+
+    @PutMapping(value="/revokeCertificate", consumes="application/json")
+    public ResponseEntity<?> revokeCertificate(@RequestBody RevokedCertificateDTO revokeCertificateDTO){
+
+        boolean alreadyRevoked = this.pkiService.revokeCertificate(revokeCertificateDTO);
+        if(alreadyRevoked){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This certificate is already revoked.");
+
+        }else {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+    }
+
+    @GetMapping(value="/checkRevocationStatusOCSP/{serialNumber}")
+    public ResponseEntity<Boolean> checkRevocationStatusOCSP(@PathVariable("serialNumber") String serialNumber){
+
+        boolean revoked = this.pkiService.checkRevocationStatusOCSP(serialNumber);
+        if(revoked) {
+            return new ResponseEntity<>(true, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(false, HttpStatus.OK);
+        }
     }
 
 }

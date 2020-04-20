@@ -31,7 +31,8 @@ public class CertificateGenerator {
     @Autowired
     private StoreCertificates store;
 
-    private String fileLocation = "keystore/keystore.jks";
+    private String fileLocationCA = "keystore/keystoreCA.jks";
+    private String passwordCA = "passwordCA";
 
     public CertificateGenerator() {}
 
@@ -93,7 +94,7 @@ public class CertificateGenerator {
 
             //Ako nije root doda se i Authority Key Identifier
             if(certDTO.getCertificateType() != CertificateType.SELF_SIGNED) {
-                java.security.cert.Certificate certIssuer =  store.findCertificateBySerialNumber(certDTO.getIssuerSerialNumber(), fileLocation);
+                java.security.cert.Certificate certIssuer =  store.findCertificateBySerialNumber(certDTO.getIssuerSerialNumber(), fileLocationCA,passwordCA);
                 AuthorityKeyIdentifier aki = utils.createAuthorityKeyIdentifier(certIssuer.getPublicKey());
                 certGen.addExtension(Extension.authorityKeyIdentifier, false, aki);
             }
