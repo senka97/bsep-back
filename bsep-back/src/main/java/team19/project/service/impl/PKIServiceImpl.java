@@ -330,6 +330,12 @@ public class PKIServiceImpl implements PKIService {
     @Override
     public boolean checkRevocationStatusOCSP(String serialNumber) {
         CertificateDB certDB = certificateDBService.findCertificate(serialNumber);
+
+        //ako sertifikata nema u bazi da ne pravi probleme
+        if(certDB == null){
+            return true;
+        }
+
         if(certDB.isRevoked()){
             return true;
         }else{
@@ -340,19 +346,45 @@ public class PKIServiceImpl implements PKIService {
     @Override
     public boolean checkValidityStatus(String serialNumber) {
 
-       /* X509Certificate cert = (X509Certificate) store.findCertificateBySerialNumber(serialNumber, fileLocation);
-        Certificate[] chain = store.findCertificateChainBySerialNumber(serialNumber, fileLocation);
+        ArrayList<Certificate> chain = new ArrayList<>();
+        CertificateDB cDB = certificateDBService.findCertificate(serialNumber);
 
-        for(int i =0 ; i < chain.length; i++) {
+        //ako sertifikata nema u bazi da ne pravi probleme
+        if(cDB == null){
+            return false;
+        }
 
-            X509Certificate x509Cert = (X509Certificate)chain[i];
+
+        if(!cDB.isCa()){
+            //ako je end entity ubacimo njega u array zatim uzmemo ceo lanac njegovog CA i taj lanac odadamo u array
+
+            Certificate cert = store.findCertificateBySerialNumber(serialNumber, fileLocationEE,passwordEE);
+            chain.add(cert);
+            Certificate[] CAchain = store.findCertificateChainBySerialNumber(cDB.getIssuerSerialNumber(), fileLocationCA,passwordCA);
+            for(Certificate c: CAchain) {
+                chain.add(c);
+            }
+
+        }else{
+            //ako je CA samo uzmemo njegov lanac i ubacimo ga u array
+
+            Certificate[] CAchain = store.findCertificateChainBySerialNumber(serialNumber, fileLocationCA,passwordCA);
+            for(Certificate c: CAchain) {
+                chain.add(c);
+            }
+
+        }
+
+        for(int i =0 ; i < chain.size(); i++) {
+
+            X509Certificate x509Cert = (X509Certificate)chain.get(i);
             X509Certificate x509CACert =null;
 
 
-            if(i != chain.length-1) {
-                x509CACert = (X509Certificate)chain[i+1];
+            if(i != chain.size()-1) {
+                x509CACert = (X509Certificate)chain.get(i+1);
             }else {
-                x509CACert = (X509Certificate)chain[i]; //kada dodje do kraja proveri samopotpisni
+                x509CACert = (X509Certificate)chain.get(i); //kada dodje do kraja proveri samopotpisni
             }
 
 
@@ -381,7 +413,7 @@ public class PKIServiceImpl implements PKIService {
             }
 
             //provera da li se nalazi u listi povucenih
-            if(revokedCertificateService.checkRevocationStatusOCSP(x509Cert.getSerialNumber().toString())) {
+            if(checkRevocationStatusOCSP(x509Cert.getSerialNumber().toString())) {
                 System.out.println("SERTIFIKAT: "+x509Cert.getSerialNumber()+" JE POVUCEN.");
                 return false;
             }
@@ -401,7 +433,7 @@ public class PKIServiceImpl implements PKIService {
         }
 
 
-        System.out.println("SERTIFIKAT I LANAC SU VALIDNI.");*/
+        System.out.println("SERTIFIKAT I LANAC SU VALIDNI.");
         return true;
     }
 
