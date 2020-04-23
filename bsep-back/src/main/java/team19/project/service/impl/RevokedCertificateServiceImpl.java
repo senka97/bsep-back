@@ -61,6 +61,10 @@ public class RevokedCertificateServiceImpl implements RevokedCertificateService 
         CertificateDB certDB = certificateDBService.findCertificate(serialNumber);
         X509Certificate certificateChainX509[];
 
+        if(certDB == null){
+            return true;
+        }
+
         if(certDB.isCa()) {
             Certificate certificateChain[] = store.findCertificateChainBySerialNumber(serialNumber, fileLocationCA, passwordCA);
             System.out.println(certificateChain.length);
