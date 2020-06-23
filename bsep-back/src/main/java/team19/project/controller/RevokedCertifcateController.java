@@ -3,7 +3,7 @@ package team19.project.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import team19.project.dto.RevokedCertificateDTO;
 import team19.project.service.impl.RevokedCertificateServiceImpl;
@@ -18,6 +18,7 @@ public class RevokedCertifcateController {
 
 
     @PutMapping(value="/revokeCertificate", consumes="application/json")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> revokeCertificate(@RequestBody RevokedCertificateDTO revokeCertificateDTO){
 
         boolean alreadyRevoked = this.revokedCertificateService.revokeCertificate(revokeCertificateDTO);
@@ -30,6 +31,7 @@ public class RevokedCertifcateController {
     }
 
     @GetMapping(value="/checkRevocationStatusOCSP/{serialNumber}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Boolean> checkRevocationStatusOCSP(@PathVariable("serialNumber") String serialNumber){
 
         boolean revoked = this.revokedCertificateService.checkRevocationStatusOCSP(serialNumber);
